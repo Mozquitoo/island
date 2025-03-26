@@ -4,11 +4,64 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <title>Document</title>
   </head>
   <body>
-    <h1>Alo Alo Alo</h1>
-    <canvas class="webgl"></canvas>
+    <!-- MENÚ PRINCIPAL -->
+    <div id="menu" class="menu">
+      <img
+        src="images/menu-background.png"
+        alt="Menu Background"
+        class="menu-background"
+      />
+      <div class="menu-content">
+        <img
+          src="images/play.png"
+          class="menu-button"
+          alt="Play"
+          id="play-button"
+        />
+        <img
+          src="images/options.png"
+          class="menu-button"
+          alt="Options"
+          id="options-button"
+        />
+        <img
+          src="images/about-us.png"
+          class="menu-button"
+          alt="About Us"
+          id="about-button"
+        />
+      </div>
+    </div>
+
+    <!-- INTRODUCCIÓN DE LA HISTORIA -->
+    <div id="intro-container" style="display: none">
+      <img
+        src="images/history.png"
+        alt="History Background"
+        id="history-background"
+      />
+      <img src="images/skip.png" alt="Skip" id="skip-button" />
+    </div>
+
+    <!-- CANVAS DEL JUEGO -->
+    <canvas class="webgl" style="display: none"></canvas>
+
+    <!-- CONTROLS IMAGE MODAL -->
+    <div id="controls-modal" class="modal" style="display: none">
+      <img src="images/close.png" alt="Close" class="close-button" />
+      <img src="images/controls.jpg" alt="Controls" class="modal-image" />
+    </div>
+
+    <!-- ABOUT US IMAGE MODAL -->
+    <div id="about-modal" class="modal" style="display: none">
+      <img src="images/close.png" alt="Close" class="close-button" />
+      <img src="images/about-us.jpg" alt="About Us" class="modal-image" />
+    </div>
+
+    <img src="images/sound-icon.png" alt="Toggle Music" id="audio-toggle" />
+    <img src="images/close.png" alt="Return to Menu" id="exit-menu-button" />
 
     <script type="module" src="script.js"></script>
   </body>

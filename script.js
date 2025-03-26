@@ -1,20 +1,63 @@
 import * as THREE from "three";
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// PROGRESS BAR SETUP
+const loadingBar = document.createElement("div");
+loadingBar.id = "loading-bar";
+loadingBar.style.position = "fixed";
+loadingBar.style.bottom = "40px";
+loadingBar.style.left = "50%";
+loadingBar.style.transform = "translateX(-50%)";
+loadingBar.style.width = "0%";
+loadingBar.style.height = "6px";
+loadingBar.style.background = "#95FF00";
+loadingBar.style.transition = "width 0.3s";
+loadingBar.style.zIndex = "9999";
+loadingBar.style.display = "none";
+document.body.appendChild(loadingBar);
+
+const percentText = document.createElement("div");
+percentText.style.position = "fixed";
+percentText.style.bottom = "50px";
+percentText.style.left = "50%";
+percentText.style.transform = "translateX(-50%)";
+percentText.style.color = "#fff";
+percentText.style.fontFamily = "Arial";
+percentText.style.fontSize = "14px";
+percentText.style.zIndex = "9999";
+percentText.style.display = "none";
+document.body.appendChild(percentText);
+
+// LOADING MANAGER
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => {
+  loadingBar.style.display = "block";
+  percentText.style.display = "block";
+};
+loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+  const percent = Math.floor((itemsLoaded / itemsTotal) * 100);
+  loadingBar.style.width = `${percent}%`;
+  percentText.textContent = `Loading: ${percent}%`;
+};
+loadingManager.onLoad = () => {
+  loadingBar.style.display = "none";
+  percentText.style.display = "none";
+};
+import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 // Loaders
-const textureLoader = new THREE.TextureLoader();
+const textureLoader = new THREE.TextureLoader(loadingManager);
 const islandURL = "Iles/Grand Ile.glb"; // Cambia por la ruta correcta
 
-const loader = new GLTFLoader();
+const loader = new GLTFLoader(loadingManager);
 // Cargar el modelo de la isla
 
 loader.load(
   islandURL,
   (gltf) => {
     const island = gltf.scene;
-    island.scale.set(3, 3, 3);
+    island.scale.set(5, 5, 5);
     island.position.set(0, -1, 0);
     scene.add(island);
     window.island = island; // Declara una variable global para la isla
@@ -34,6 +77,8 @@ sciFiWallColor.colorSpace = THREE.SRGBColorSpace;
 
 // Scene
 const scene = new THREE.Scene();
+const spaceTexture = textureLoader.load("Texture/stars.jpg");
+scene.background = spaceTexture;
 
 // Sizes (Viewport)
 const sizes = {
@@ -43,9 +88,147 @@ const sizes = {
 
 // Renderer
 const canvas = document.querySelector("canvas.webgl");
+
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
+
+// Acción al hacer clic en el botón para volver al menú
+document.getElementById("exit-menu-button")?.addEventListener("click", () => {
+  document.getElementById("menu").style.display = "flex";
+  document.querySelector("canvas.webgl").style.display = "none";
+  document.getElementById("exit-menu-button").style.display = "none";
+});
+
+// Mostrar imagen de Controls
+window.addEventListener("DOMContentLoaded", () => {
+  const optionsBtn = document.getElementById("options-button");
+  if (optionsBtn) {
+    optionsBtn.addEventListener("click", () => {
+      const controlsModal = document.getElementById("controls-modal");
+      if (controlsModal) {
+        controlsModal.style.display = "flex";
+      }
+    });
+  }
+});
+
+// Mostrar imagen de About Us
+document.getElementById("about-button")?.addEventListener("click", () => {
+  const aboutModal = document.getElementById("about-modal");
+  if (aboutModal) {
+    aboutModal.style.display = "flex";
+  }
+});
+
+// Cerrar modales al hacer clic sobre ellos o presionar Esc
+document.getElementById("controls-modal")?.addEventListener("click", () => {
+  document.getElementById("controls-modal").style.display = "none";
+});
+document.getElementById("about-modal")?.addEventListener("click", () => {
+  document.getElementById("about-modal").style.display = "none";
+});
+
+// Activar audio con el primer clic del usuario
+document.addEventListener(
+  "click",
+  () => {
+    if (!isPlaying) {
+      bgMusic.play();
+      isPlaying = true;
+    }
+  },
+  { once: true }
+);
+
+// MUSIC CONTROL
+const bgMusic = new Audio("audio/music.mp3");
+bgMusic.loop = true;
+bgMusic.volume = 0.5;
+
+let isPlaying = false;
+
+window.addEventListener("DOMContentLoaded", () => {
+  const audioToggle = document.getElementById("audio-toggle");
+  if (audioToggle) {
+    bgMusic.play();
+    isPlaying = true;
+    audioToggle.classList.remove("muted");
+
+    audioToggle.addEventListener("click", () => {
+      if (isPlaying) {
+        bgMusic.pause();
+        audioToggle.classList.add("muted");
+      } else {
+        bgMusic.play();
+        audioToggle.classList.remove("muted");
+      }
+      isPlaying = !isPlaying;
+    });
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "m" || e.key === "M") {
+    const audioToggle = document.getElementById("audio-toggle");
+    if (isPlaying) {
+      bgMusic.pause();
+      audioToggle.classList.add("muted");
+    } else {
+      bgMusic.play();
+      audioToggle.classList.remove("muted");
+    }
+    isPlaying = !isPlaying;
+  }
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+  const playBtn = document.getElementById("play-button");
+  if (playBtn) {
+    playBtn.addEventListener("click", () => {
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("intro-container").style.display = "flex";
+
+      const skipBtn = document.getElementById("skip-button");
+      if (skipBtn) {
+        skipBtn.addEventListener("click", () => {
+          document.getElementById("intro-container").style.display = "none";
+          document.querySelector("canvas.webgl").style.display = "block";
+          const exitBtn = document.getElementById("exit-menu-button");
+          if (exitBtn) exitBtn.style.display = "block";
+        });
+      }
+    });
+  }
+});
+setInterval(() => {
+  if (
+    window.astronaut &&
+    window.astronaut.position.y < -5 &&
+    !document.getElementById("lost-message")
+  ) {
+    const message = document.createElement("div");
+    message.id = "lost-message";
+    message.innerHTML = `
+      <div style="background: rgba(0,0,0,0.7); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+        <h2>You are lost in space</h2>
+        <button id="respawn-button" style="padding: 10px 20px; margin-top: 10px;">Respawn</button>
+      </div>
+    `;
+    message.style.position = "fixed";
+    message.style.top = "50%";
+    message.style.left = "50%";
+    message.style.transform = "translate(-50%, -50%)";
+    message.style.zIndex = "1000";
+    document.body.appendChild(message);
+
+    document.getElementById("respawn-button").addEventListener("click", () => {
+      window.astronaut.position.set(0, 5, 0);
+      verticalVelocity = 0;
+      document.body.removeChild(message);
+    });
+  }
+}, 500);
 
 renderer.setSize(sizes.width, sizes.height);
 
@@ -53,17 +236,26 @@ renderer.setSize(sizes.width, sizes.height);
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
 camera.position.z = 7;
 scene.add(camera);
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.enableDamping = true;
+orbitControls.enabled = false; // solo se activa en modo visualización
 
 // Controls
-const controls = new OrbitControls(camera, canvas);
-controls.enableDamping = true;
+const controls = new PointerLockControls(camera, document.body);
+scene.add(controls.getObject());
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
+const softAmbient = new THREE.AmbientLight(0x404040, 1);
+scene.add(softAmbient);
 
 const directionalLight = new THREE.DirectionalLight("#bb6800", 0.9);
 scene.add(directionalLight);
+
+const dynamicLight = new THREE.DirectionalLight(0xffeecc, 0.8);
+dynamicLight.position.set(5, 10, 0);
+scene.add(dynamicLight);
 
 // Models
 // Load GLTF Model
@@ -74,7 +266,10 @@ let cameraMode = 0;
 let mouseDeltaX = 0;
 let mouseDeltaY = 0;
 let pitch = 0;
+let verticalVelocity = 0;
 let isViewOnly = false; // Nueva variable para controlar el modo de visualización
+
+let previousY; // Declarar la variable previousY de forma global
 
 loader.load(
   "Astronauta/Astronauta.glb",
@@ -141,6 +336,7 @@ loader.load(
       switch (event.key) {
         case "Tab": {
           isViewOnly = !isViewOnly;
+          orbitControls.enabled = isViewOnly;
           event.preventDefault();
           const message = document.createElement("div");
           message.textContent = isViewOnly
@@ -174,6 +370,7 @@ loader.load(
           const strafeZ = speed * Math.sin(angle);
           window.astronaut.position.x -= strafeX;
           window.astronaut.position.z -= strafeZ;
+          verticalVelocity = 0.05;
           break;
         }
         case "ArrowRight": {
@@ -181,13 +378,16 @@ loader.load(
           const strafeZ = speed * Math.sin(angle);
           window.astronaut.position.x += strafeX;
           window.astronaut.position.z += strafeZ;
+          verticalVelocity = 0.05;
           break;
         }
         case "ArrowUp":
+          verticalVelocity = 0.05;
           window.astronaut.position.x += speed * Math.cos(Math.PI / 2 + angle);
           window.astronaut.position.z -= speed * Math.sin(Math.PI / 2 + angle);
           break;
         case "ArrowDown":
+          verticalVelocity = 0.05;
           window.astronaut.position.x -= speed * Math.cos(Math.PI / 2 + angle);
           window.astronaut.position.z += speed * Math.sin(Math.PI / 2 + angle);
           break;
@@ -206,8 +406,55 @@ loader.load(
 
     // Animation Loop
     const tick = () => {
-      if (isViewOnly) controls.update();
+      let previousY = window.astronaut ? window.astronaut.position.y : 0; // Mover la declaración de previousY aquí
+      if (window.astronaut && window.island) {
+        verticalVelocity -= 0.02;
 
+        previousY = window.astronaut.position.y; // Eliminar esta línea
+
+        window.astronaut.position.y += verticalVelocity;
+
+        const origin = window.astronaut.position.clone();
+        origin.y += 10;
+        raycaster.set(origin, down);
+        const intersects = raycaster.intersectObject(window.island, true);
+
+        if (intersects.length > 0) {
+          const groundY = intersects[0].point.y;
+          if (window.astronaut.position.y <= groundY + 0.3) {
+            window.astronaut.position.y = groundY + 0.3;
+            verticalVelocity = 0;
+          }
+        }
+
+        if (
+          window.astronaut.position.y < -20 &&
+          !document.getElementById("lost-message")
+        ) {
+          const message = document.createElement("div");
+          message.id = "lost-message";
+          message.innerHTML = `
+            <div style="background: rgba(0,0,0,0.7); color: white; padding: 20px; border-radius: 10px; text-align: center;">
+              <h2>You are lost in space</h2>
+              <button id="respawn-button" style="padding: 10px 20px; margin-top: 10px;">Respawn</button>
+            </div>
+          `;
+          message.style.position = "fixed";
+          message.style.top = "50%";
+          message.style.left = "50%";
+          message.style.transform = "translate(-50%, -50%)";
+          message.style.zIndex = "1000";
+          document.body.appendChild(message);
+
+          document
+            .getElementById("respawn-button")
+            .addEventListener("click", () => {
+              window.astronaut.position.set(0, 5, 0);
+              verticalVelocity = 0;
+              document.body.removeChild(message);
+            });
+        }
+      }
       if (!isViewOnly) {
         // Lógica de astronauta y cámara
         angle -= mouseDeltaX * sensitivity;
@@ -227,7 +474,12 @@ loader.load(
 
         if (cameraMode === 0) {
           // Primera persona
-          camera.position.copy(window.astronaut.position).add(headOffset);
+          const cameraY = Math.max(previousY, window.astronaut.position.y);
+          camera.position.set(
+            window.astronaut.position.x,
+            cameraY + 1.5,
+            window.astronaut.position.z
+          );
           camera.lookAt(camera.position.clone().add(lookDirection));
         } else if (cameraMode === 1) {
           // Tercera persona cercana
@@ -248,6 +500,15 @@ loader.load(
         }
       }
 
+      if (isViewOnly) {
+        orbitControls.update();
+      }
+
+      const time = performance.now() * 0.001;
+      dynamicLight.position.x = 10 * Math.cos(time * 0.3);
+      dynamicLight.position.z = 10 * Math.sin(time * 0.3);
+      dynamicLight.position.y = 6 + Math.sin(time * 0.7);
+
       renderer.render(scene, camera);
       window.requestAnimationFrame(tick);
     };
@@ -265,5 +526,33 @@ const axesHelper = new THREE.AxesHelper(2);
 scene.add(axesHelper);
 
 document.addEventListener("pointerlockchange", () => {
-  canvas.style.cursor = isViewOnly ? "crosshair" : "none";
+  const locked = document.pointerLockElement === canvas;
+
+  if (!locked) {
+    isViewOnly = true;
+    orbitControls.enabled = true;
+    canvas.style.cursor = "crosshair";
+
+    const message = document.createElement("div");
+    message.textContent = "Viewing mode enabled (Pointer Lock exited)";
+    message.style.position = "fixed";
+    message.style.top = "20px";
+    message.style.left = "50%";
+    message.style.transform = "translateX(-50%)";
+    message.style.padding = "10px 20px";
+    message.style.background = "rgba(0, 0, 0, 0.6)";
+    message.style.color = "#fff";
+    message.style.fontFamily = "Arial, sans-serif";
+    message.style.fontSize = "16px";
+    message.style.borderRadius = "5px";
+    message.style.zIndex = "1000";
+    document.body.appendChild(message);
+    setTimeout(() => {
+      document.body.removeChild(message);
+    }, 2000);
+  } else {
+    isViewOnly = false;
+    orbitControls.enabled = false;
+    canvas.style.cursor = "none";
+  }
 });
