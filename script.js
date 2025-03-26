@@ -48,26 +48,9 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 // Loaders
 const textureLoader = new THREE.TextureLoader(loadingManager);
-const islandURL = "Iles/Grand Ile.glb"; // Cambia por la ruta correcta
+const islandURL = "Iles/Grand Ile.glb";
 
 const loader = new GLTFLoader(loadingManager);
-// Cargar el modelo de la isla
-
-loader.load(
-  islandURL,
-  (gltf) => {
-    const island = gltf.scene;
-    island.scale.set(5, 5, 5);
-    island.position.set(0, -1, 0);
-    scene.add(island);
-    window.island = island; // Declara una variable global para la isla
-  },
-
-  undefined,
-  (error) => {
-    console.error("Error al cargar la isla:", error);
-  }
-);
 
 // Textures
 const sciFiWallColor = textureLoader.load(
@@ -93,14 +76,14 @@ const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
 
-// Acción al hacer clic en el botón para volver al menú
+// Return to main menu on click
 document.getElementById("exit-menu-button")?.addEventListener("click", () => {
   document.getElementById("menu").style.display = "flex";
   document.querySelector("canvas.webgl").style.display = "none";
   document.getElementById("exit-menu-button").style.display = "none";
 });
 
-// Mostrar imagen de Controls
+// Display Controls modal
 window.addEventListener("DOMContentLoaded", () => {
   const optionsBtn = document.getElementById("options-button");
   if (optionsBtn) {
@@ -113,7 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// Mostrar imagen de About Us
+// Display About Us modal
 document.getElementById("about-button")?.addEventListener("click", () => {
   const aboutModal = document.getElementById("about-modal");
   if (aboutModal) {
@@ -121,7 +104,8 @@ document.getElementById("about-button")?.addEventListener("click", () => {
   }
 });
 
-// Cerrar modales al hacer clic sobre ellos o presionar Esc
+// Close modals on click or Esc key
+
 document.getElementById("controls-modal")?.addEventListener("click", () => {
   document.getElementById("controls-modal").style.display = "none";
 });
@@ -129,7 +113,7 @@ document.getElementById("about-modal")?.addEventListener("click", () => {
   document.getElementById("about-modal").style.display = "none";
 });
 
-// Activar audio con el primer clic del usuario
+// Enable audio playback on first user interaction
 document.addEventListener(
   "click",
   () => {
@@ -151,8 +135,6 @@ let isPlaying = false;
 window.addEventListener("DOMContentLoaded", () => {
   const audioToggle = document.getElementById("audio-toggle");
   if (audioToggle) {
-    bgMusic.play();
-    isPlaying = true;
     audioToggle.classList.remove("muted");
 
     audioToggle.addEventListener("click", () => {
@@ -238,7 +220,7 @@ camera.position.z = 7;
 scene.add(camera);
 const orbitControls = new OrbitControls(camera, renderer.domElement);
 orbitControls.enableDamping = true;
-orbitControls.enabled = false; // solo se activa en modo visualización
+orbitControls.enabled = false;
 
 // Controls
 const controls = new PointerLockControls(camera, document.body);
@@ -250,280 +232,303 @@ scene.add(ambientLight);
 const softAmbient = new THREE.AmbientLight(0x404040, 1);
 scene.add(softAmbient);
 
-const directionalLight = new THREE.DirectionalLight("#bb6800", 0.9);
-scene.add(directionalLight);
-
-const dynamicLight = new THREE.DirectionalLight(0xffeecc, 0.8);
-dynamicLight.position.set(5, 10, 0);
-scene.add(dynamicLight);
+const hemisphereLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+hemisphereLight.position.set(0, 20, 0);
+scene.add(hemisphereLight);
 
 // Models
 // Load GLTF Model
 const raycaster = new THREE.Raycaster();
 const down = new THREE.Vector3(0, -1, 0);
 
+let angle = 0;
+let speed = 0.4;
+let sensitivity = 0.002;
 let cameraMode = 0;
 let mouseDeltaX = 0;
 let mouseDeltaY = 0;
 let pitch = 0;
 let verticalVelocity = 0;
-let isViewOnly = false; // Nueva variable para controlar el modo de visualización
+let isViewOnly = false;
 
-let previousY; // Declarar la variable previousY de forma global
+let previousY;
+let lastRaycastTime = 0;
+const raycastInterval = 100;
 
+// -------------------------
+// Load Island Model (GLTF)
+// -------------------------
 loader.load(
-  "Astronauta/Astronauta.glb",
+  islandURL,
   (gltf) => {
-    const model = gltf.scene;
-    model.position.set(0, 0, 0);
-    model.scale.set(0.5, 0.5, 0.5);
+    const island = gltf.scene;
+    island.scale.set(5, 5, 5);
+    island.position.set(0, -1, 0);
+    scene.add(island);
+    window.island = island; // Assign island model to global variable
 
-    scene.add(model);
-    window.astronaut = model;
-    model.rotation.y = 0;
+    // Load Astronaut model after island is loaded
+    loader.load(
+      "Astronauta/Astronauta.glb",
+      (gltf) => {
+        const model = gltf.scene;
+        model.position.set(0, 0, 0);
+        model.scale.set(0.5, 0.5, 0.5);
 
-    let angle = 0;
-    let speed = 0.4;
-    let sensitivity = 0.002;
+        scene.add(model);
+        window.astronaut = model;
+        model.rotation.y = 0;
 
-    // Event Listener for Pointer Lock
-    canvas.addEventListener("click", () => {
-      canvas.requestPointerLock();
-    });
+        // Event Listener for Pointer Lock
+        canvas.addEventListener("click", () => {
+          canvas.requestPointerLock();
+        });
 
-    // Event Listener for Mouse Move
-    document.addEventListener("mousemove", (event) => {
-      if (document.pointerLockElement === canvas && window.astronaut) {
-        mouseDeltaX = event.movementX;
-        mouseDeltaY = event.movementY;
+        // Remaining logic continues after loading
+        // (tick and other functions are already defined)
+      },
+      undefined,
+      (error) => {
+        console.error("Error al cargar el modelo:", error);
       }
-    });
+    );
+  },
+  undefined,
+  (error) => {
+    console.error("Error al cargar la isla:", error);
+  }
+);
+// Event Listener for Mouse Move
+document.addEventListener("mousemove", (event) => {
+  if (document.pointerLockElement === canvas && window.astronaut) {
+    mouseDeltaX = event.movementX;
+    mouseDeltaY = event.movementY;
+  }
+});
 
-    const updateAstronautTerrain = () => {
-      if (window.island && window.astronaut) {
-        const origin = window.astronaut.position.clone();
-        origin.y += 10;
-        raycaster.set(origin, down);
-        const intersects = raycaster.intersectObject(window.island, true);
+const updateAstronautTerrain = () => {
+  if (window.island && window.astronaut) {
+    const origin = window.astronaut.position.clone();
+    origin.y += 10;
+    raycaster.set(origin, down);
+    const intersects = raycaster.intersectObject(window.island, true);
 
-        if (intersects.length > 0) {
-          const intersect = intersects[0];
-          const groundY = intersect.point.y;
+    if (intersects.length > 0) {
+      const intersect = intersects[0];
+      const groundY = intersect.point.y;
+      window.astronaut.position.y = groundY + 0.3;
+
+      const normalMatrix = new THREE.Matrix3().getNormalMatrix(
+        intersect.object.matrixWorld
+      );
+      const worldNormal = intersect.face.normal
+        .clone()
+        .applyMatrix3(normalMatrix)
+        .normalize();
+
+      const up = new THREE.Vector3(0, 1, 0);
+      const quaternion = new THREE.Quaternion().setFromUnitVectors(
+        up,
+        worldNormal
+      );
+      window.astronaut.quaternion.slerp(quaternion, 0.1);
+    }
+  }
+};
+
+// Event Listener for Keydown
+window.addEventListener("keydown", (event) => {
+  if (!window.astronaut) return;
+
+  switch (event.key) {
+    case "Tab": {
+      isViewOnly = !isViewOnly;
+      orbitControls.enabled = isViewOnly;
+      event.preventDefault();
+      const message = document.createElement("div");
+      message.textContent = isViewOnly
+        ? "Viewing mode enabled"
+        : "Astronaut mode enabled";
+      message.style.position = "fixed";
+      message.style.top = "20px";
+      message.style.left = "50%";
+      message.style.transform = "translateX(-50%)";
+      message.style.padding = "10px 20px";
+      message.style.background = "rgba(0, 0, 0, 0.6)";
+      message.style.color = "#fff";
+      message.style.fontFamily = "Arial, sans-serif";
+      message.style.fontSize = "16px";
+      message.style.borderRadius = "5px";
+      message.style.zIndex = "1000";
+      document.body.appendChild(message);
+      setTimeout(() => {
+        document.body.removeChild(message);
+      }, 2000);
+      canvas.style.cursor = "crosshair";
+      if (isViewOnly) {
+        document.exitPointerLock();
+      } else {
+        canvas.requestPointerLock();
+      }
+      break;
+    }
+    case "ArrowLeft": {
+      const strafeX = speed * Math.cos(angle);
+      const strafeZ = speed * Math.sin(angle);
+      window.astronaut.position.x -= strafeX;
+      window.astronaut.position.z -= strafeZ;
+      verticalVelocity = 0.05;
+      break;
+    }
+    case "ArrowRight": {
+      const strafeX = speed * Math.cos(angle);
+      const strafeZ = speed * Math.sin(angle);
+      window.astronaut.position.x += strafeX;
+      window.astronaut.position.z += strafeZ;
+      verticalVelocity = 0.05;
+      break;
+    }
+    case "ArrowUp":
+      verticalVelocity = 0.05;
+      window.astronaut.position.x += speed * Math.cos(Math.PI / 2 + angle);
+      window.astronaut.position.z -= speed * Math.sin(Math.PI / 2 + angle);
+      break;
+    case "ArrowDown":
+      verticalVelocity = 0.05;
+      window.astronaut.position.x -= speed * Math.cos(Math.PI / 2 + angle);
+      window.astronaut.position.z += speed * Math.sin(Math.PI / 2 + angle);
+      break;
+    case " ":
+      window.astronaut.position.y += speed;
+      break;
+    case "Shift":
+      window.astronaut.position.y -= speed;
+      break;
+    case "f":
+      cameraMode = (cameraMode + 1) % 3;
+      break;
+  }
+  if (performance.now() - lastRaycastTime > raycastInterval) {
+    updateAstronautTerrain();
+    lastRaycastTime = performance.now();
+  }
+});
+
+// Animation Loop
+const tick = () => {
+  let previousY = window.astronaut ? window.astronaut.position.y : 0;
+  if (window.astronaut && window.island) {
+    if (performance.now() - lastRaycastTime > raycastInterval) {
+      const origin = window.astronaut.position.clone();
+      origin.y += 10;
+      raycaster.set(origin, down);
+      const intersects = raycaster.intersectObject(window.island, true);
+
+      verticalVelocity -= 0.02;
+      window.astronaut.position.y += verticalVelocity;
+
+      if (intersects.length > 0) {
+        const groundY = intersects[0].point.y;
+        const astronautY = window.astronaut.position.y;
+
+        if (astronautY < groundY + 0.3) {
           window.astronaut.position.y = groundY + 0.3;
-
-          const normalMatrix = new THREE.Matrix3().getNormalMatrix(
-            intersect.object.matrixWorld
-          );
-          const worldNormal = intersect.face.normal
-            .clone()
-            .applyMatrix3(normalMatrix)
-            .normalize();
-
-          const up = new THREE.Vector3(0, 1, 0);
-          const quaternion = new THREE.Quaternion().setFromUnitVectors(
-            up,
-            worldNormal
-          );
-          window.astronaut.quaternion.slerp(quaternion, 0.1);
+          verticalVelocity = 0;
         }
       }
-    };
 
-    // Event Listener for Keydown
-    window.addEventListener("keydown", (event) => {
-      if (!window.astronaut) return;
+      lastRaycastTime = performance.now();
+    }
 
-      switch (event.key) {
-        case "Tab": {
-          isViewOnly = !isViewOnly;
-          orbitControls.enabled = isViewOnly;
-          event.preventDefault();
-          const message = document.createElement("div");
-          message.textContent = isViewOnly
-            ? "Viewing mode enabled"
-            : "Astronaut mode enabled";
-          message.style.position = "fixed";
-          message.style.top = "20px";
-          message.style.left = "50%";
-          message.style.transform = "translateX(-50%)";
-          message.style.padding = "10px 20px";
-          message.style.background = "rgba(0, 0, 0, 0.6)";
-          message.style.color = "#fff";
-          message.style.fontFamily = "Arial, sans-serif";
-          message.style.fontSize = "16px";
-          message.style.borderRadius = "5px";
-          message.style.zIndex = "1000";
-          document.body.appendChild(message);
-          setTimeout(() => {
-            document.body.removeChild(message);
-          }, 2000);
-          canvas.style.cursor = "crosshair";
-          if (isViewOnly) {
-            document.exitPointerLock();
-          } else {
-            canvas.requestPointerLock();
-          }
-          break;
-        }
-        case "ArrowLeft": {
-          const strafeX = speed * Math.cos(angle);
-          const strafeZ = speed * Math.sin(angle);
-          window.astronaut.position.x -= strafeX;
-          window.astronaut.position.z -= strafeZ;
-          verticalVelocity = 0.05;
-          break;
-        }
-        case "ArrowRight": {
-          const strafeX = speed * Math.cos(angle);
-          const strafeZ = speed * Math.sin(angle);
-          window.astronaut.position.x += strafeX;
-          window.astronaut.position.z += strafeZ;
-          verticalVelocity = 0.05;
-          break;
-        }
-        case "ArrowUp":
-          verticalVelocity = 0.05;
-          window.astronaut.position.x += speed * Math.cos(Math.PI / 2 + angle);
-          window.astronaut.position.z -= speed * Math.sin(Math.PI / 2 + angle);
-          break;
-        case "ArrowDown":
-          verticalVelocity = 0.05;
-          window.astronaut.position.x -= speed * Math.cos(Math.PI / 2 + angle);
-          window.astronaut.position.z += speed * Math.sin(Math.PI / 2 + angle);
-          break;
-        case " ":
-          window.astronaut.position.y += speed;
-          break;
-        case "Shift":
-          window.astronaut.position.y -= speed;
-          break;
-        case "f":
-          cameraMode = (cameraMode + 1) % 3;
-          break;
-      }
-      updateAstronautTerrain();
-    });
-
-    // Animation Loop
-    const tick = () => {
-      let previousY = window.astronaut ? window.astronaut.position.y : 0; // Mover la declaración de previousY aquí
-      if (window.astronaut && window.island) {
-        verticalVelocity -= 0.02;
-
-        previousY = window.astronaut.position.y; // Eliminar esta línea
-
-        window.astronaut.position.y += verticalVelocity;
-
-        const origin = window.astronaut.position.clone();
-        origin.y += 10;
-        raycaster.set(origin, down);
-        const intersects = raycaster.intersectObject(window.island, true);
-
-        if (intersects.length > 0) {
-          const groundY = intersects[0].point.y;
-          if (window.astronaut.position.y <= groundY + 0.3) {
-            window.astronaut.position.y = groundY + 0.3;
-            verticalVelocity = 0;
-          }
-        }
-
-        if (
-          window.astronaut.position.y < -20 &&
-          !document.getElementById("lost-message")
-        ) {
-          const message = document.createElement("div");
-          message.id = "lost-message";
-          message.innerHTML = `
+    if (
+      window.astronaut.position.y < -20 &&
+      !document.getElementById("lost-message")
+    ) {
+      const message = document.createElement("div");
+      message.id = "lost-message";
+      message.innerHTML = `
             <div style="background: rgba(0,0,0,0.7); color: white; padding: 20px; border-radius: 10px; text-align: center;">
               <h2>You are lost in space</h2>
               <button id="respawn-button" style="padding: 10px 20px; margin-top: 10px;">Respawn</button>
             </div>
           `;
-          message.style.position = "fixed";
-          message.style.top = "50%";
-          message.style.left = "50%";
-          message.style.transform = "translate(-50%, -50%)";
-          message.style.zIndex = "1000";
-          document.body.appendChild(message);
+      message.style.position = "fixed";
+      message.style.top = "50%";
+      message.style.left = "50%";
+      message.style.transform = "translate(-50%, -50%)";
+      message.style.zIndex = "1000";
+      document.body.appendChild(message);
 
-          document
-            .getElementById("respawn-button")
-            .addEventListener("click", () => {
-              window.astronaut.position.set(0, 5, 0);
-              verticalVelocity = 0;
-              document.body.removeChild(message);
-            });
-        }
-      }
-      if (!isViewOnly) {
-        // Lógica de astronauta y cámara
-        angle -= mouseDeltaX * sensitivity;
-        pitch -= mouseDeltaY * sensitivity;
-        mouseDeltaX = 0;
-        mouseDeltaY = 0;
-        pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+      document
+        .getElementById("respawn-button")
+        .addEventListener("click", () => {
+          window.astronaut.position.set(0, 5, 0);
+          verticalVelocity = 0;
+          document.body.removeChild(message);
+        });
+    }
+  }
+  if (!isViewOnly && window.astronaut) {
+    // Astronaut control and camera orientation
+    angle -= mouseDeltaX * sensitivity;
+    pitch -= mouseDeltaY * sensitivity;
+    mouseDeltaX = 0;
+    mouseDeltaY = 0;
+    pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
 
-        window.astronaut.rotation.y = angle + Math.PI;
+    window.astronaut.rotation.y = angle + Math.PI;
 
-        const headOffset = new THREE.Vector3(0, 1.5, 0);
-        const lookDirection = new THREE.Vector3(
-          Math.cos(angle + Math.PI / 2) * Math.cos(pitch),
-          Math.sin(pitch),
-          -Math.sin(angle + Math.PI / 2) * Math.cos(pitch)
-        );
+    const headOffset = new THREE.Vector3(0, 1.5, 0);
+    const lookDirection = new THREE.Vector3(
+      Math.cos(angle + Math.PI / 2) * Math.cos(pitch),
+      Math.sin(pitch),
+      -Math.sin(angle + Math.PI / 2) * Math.cos(pitch)
+    );
 
-        if (cameraMode === 0) {
-          // Primera persona
-          const cameraY = Math.max(previousY, window.astronaut.position.y);
-          camera.position.set(
-            window.astronaut.position.x,
-            cameraY + 1.5,
-            window.astronaut.position.z
-          );
-          camera.lookAt(camera.position.clone().add(lookDirection));
-        } else if (cameraMode === 1) {
-          // Tercera persona cercana
-          const offset = new THREE.Vector3(0, 2, -3).applyAxisAngle(
-            new THREE.Vector3(0, 1, 0),
-            angle
-          );
-          camera.position.copy(window.astronaut.position).add(offset);
-          camera.lookAt(window.astronaut.position);
-        } else {
-          // Tercera persona lejana
-          const offset = new THREE.Vector3(0, 4, -8).applyAxisAngle(
-            new THREE.Vector3(0, 1, 0),
-            angle
-          );
-          camera.position.copy(window.astronaut.position).add(offset);
-          camera.lookAt(window.astronaut.position);
-        }
-      }
+    if (cameraMode === 0) {
+      // First-person view
+      const cameraY = Math.max(previousY, window.astronaut.position.y);
+      camera.position.set(
+        window.astronaut.position.x,
+        cameraY + 1.5,
+        window.astronaut.position.z
+      );
+      camera.lookAt(camera.position.clone().add(lookDirection));
+    } else if (cameraMode === 1) {
+      // Third-person close view
+      const offset = new THREE.Vector3(0, 2, -3).applyAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        angle
+      );
+      camera.position.copy(window.astronaut.position).add(offset);
+      camera.lookAt(window.astronaut.position);
+    } else {
+      // Third-person far view
+      const offset = new THREE.Vector3(0, 4, -8).applyAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        angle
+      );
+      camera.position.copy(window.astronaut.position).add(offset);
+      camera.lookAt(window.astronaut.position);
+    }
+  }
 
-      if (isViewOnly) {
-        orbitControls.update();
-      }
+  if (isViewOnly) {
+    orbitControls.update();
+  }
 
-      const time = performance.now() * 0.001;
-      dynamicLight.position.x = 10 * Math.cos(time * 0.3);
-      dynamicLight.position.z = 10 * Math.sin(time * 0.3);
-      dynamicLight.position.y = 6 + Math.sin(time * 0.7);
+  renderer.render(scene, camera);
+  window.requestAnimationFrame(tick);
+};
 
-      renderer.render(scene, camera);
-      window.requestAnimationFrame(tick);
-    };
+tick();
 
-    tick();
-  },
-  undefined,
+undefined,
   (error) => {
     console.error("Error al cargar el modelo:", error);
-  }
-);
+  };
 
 // Helpers
-const axesHelper = new THREE.AxesHelper(2);
-scene.add(axesHelper);
 
 document.addEventListener("pointerlockchange", () => {
   const locked = document.pointerLockElement === canvas;
