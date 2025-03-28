@@ -106,7 +106,7 @@ Music plays after the user's first click and can be muted or unmuted using the `
 
 - Astronaut model: Open source (specify source like Sketchfab, etc.)
 - Music: Royalty-free or by author (add source if applicable)
-- Developed by: Cristian Alejandro Mallama Lasso
+- Developed by: Cristian Mallama  Thuau Nicolas Bournique Raphael Ferreira Mathéo
 
 ---
 
