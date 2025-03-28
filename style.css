@@ -3,7 +3,6 @@
   padding: 0;
 }
 
-/* Botones como imágenes */
 .menu-content img.menu-button {
   width: 200px;
   cursor: pointer;
@@ -26,14 +25,13 @@ html,
 body {
   overflow: hidden;
 }
-/* General */
+
 body {
   margin: 0;
   overflow: hidden;
   font-family: "Arial", sans-serif;
 }
 
-/* Menú */
 .menu {
   position: absolute;
   width: 100%;
@@ -43,7 +41,6 @@ body {
   z-index: 10;
 }
 
-/* Imagen de fondo del menú */
 .menu-background {
   position: absolute;
   width: 100%;
@@ -53,7 +50,6 @@ body {
   z-index: -1;
 }
 
-/* Contenido del menú (texto + botones) */
 .menu-content {
   position: absolute;
   top: 50%;
@@ -139,7 +135,6 @@ body {
   filter: drop-shadow(0 0 5px black);
 }
 
-/* Botón de salida en modo astronauta */
 #exit-menu-button {
   position: fixed;
   top: 20px;
@@ -148,7 +143,7 @@ body {
   height: auto;
   cursor: pointer;
   z-index: 1000;
-  display: none; /* visible solo cuando se activa en JS */
+  display: none;
   transition: transform 0.3s ease;
 }
 
@@ -156,7 +151,6 @@ body {
   transform: scale(1.1);
 }
 
-/* New styles for intro container, history background, and skip button */
 #intro-container {
   position: fixed;
   top: 0;
