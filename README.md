@@ -105,6 +105,11 @@ Music plays after the user's first click and can be muted or unmuted using the `
 ## 🧱 Credits
 
 - Astronaut model: Open source (Sketchfab)
+- Island model: Created in Blender by Bournique Raphael
 - Music: sonidos del espacio or by author EL ALMA)
-- Developed by: Cristian Mallama  Thuau Nicolas Bournique Raphael Ferreira Mathéo
+- Developed by:
+- Bournique Raphael
+- Ferreira Mathéo
+- Mallama Cristian
+- Thuau Nicolas
 
