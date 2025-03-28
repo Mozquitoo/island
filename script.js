@@ -289,13 +289,13 @@ loader.load(
       },
       undefined,
       (error) => {
-        console.error("Error al cargar el modelo:", error);
+        console.error("Error loading the model:", error);
       }
     );
   },
   undefined,
   (error) => {
-    console.error("Error al cargar la isla:", error);
+    console.error("Error loading the island:", error);
   }
 );
 // Event Listener for Mouse Move
@@ -525,7 +525,7 @@ tick();
 
 undefined,
   (error) => {
-    console.error("Error al cargar el modelo:", error);
+    console.error("Error loading the model:", error);
   };
 
 // Helpers
