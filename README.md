@@ -104,12 +104,7 @@ Music plays after the user's first click and can be muted or unmuted using the `
 
 ## 🧱 Credits
 
-- Astronaut model: Open source (specify source like Sketchfab, etc.)
-- Music: Royalty-free or by author (add source if applicable)
+- Astronaut model: Open source (Sketchfab)
+- Music: sonidos del espacio or by author EL ALMA)
 - Developed by: Cristian Mallama  Thuau Nicolas Bournique Raphael Ferreira Mathéo
 
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
